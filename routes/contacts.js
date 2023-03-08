@@ -1,20 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const Contact = require('../Model/Contacts');
+const Contacts = require('../Model/Contacts');
+const cors = require("cors");
+router.use(cors());
 
-// Get all contacts
-/**
- * @swagger
- * /contacts:
- *   get:
- *     summary: Returns a list of users contacts
- *     responses:
- *       200:
- *         description: OK
- */
-router.get('/contacts', async (req, res) => {
+
+router.get("/list", async (req, res) => {
   try {
-    const contacts = await Contact.find();
+    const contacts = await Contacts.find();
     res.send(contacts);
   } catch (err) {
     console.error(err);
@@ -22,19 +15,22 @@ router.get('/contacts', async (req, res) => {
   }
 });
 
-// Create a new contact
-/**
- * @swagger
- * /contacts:
- *   post:
- *     summary: add a new contact to the list of contacts
- *     responses:
- *       200:
- *         description: OK
- */
+
+
+router.get('/contacts', async (req, res) => {
+  try {
+    const contacts = await Contacts.find();
+    res.send(contacts);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+});
+
+
 router.post('/contacts', async (req, res) => {
   try {
-    const contact = new Contact(req.body);
+    const contact = new Contacts(req.body);
     await contact.save();
     res.send(contact);
   } catch (err) {

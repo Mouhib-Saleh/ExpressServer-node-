@@ -9,31 +9,22 @@ var usersRouter = require('./routes/users');
 var contactsRouter = require('./routes/contacts');
 var osRouter = require('./routes/os');
 var productsRouter = require('./routes/products');
-const dotenv = require('dotenv');
-
+const dotenv = require('dotenv').config();
+var socket = require('socket.io')(require("http"));
 var app = express();
-dotenv.config();
-mongoose.connect(process.env.DB_CONNECT,{useNewUrlParser: true },
+
+socket.on("connect",function(client){
+  console.log("user connected")
+  client.emit("message","Hello from server")
+})
+
+
+mongoose.set('strictQuery', false);
+mongoose.connect(process.env.MONGODB_URI,{useNewUrlParser: true },
 () => console.log('connected to db'));
-//Swagger
 
-const swaggerUi = require('swagger-ui-express');
-const swaggerJSDoc = require('swagger-jsdoc');
 
-const options = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'My API',
-      version: '1.0.0',
-    },
-  },
-  apis: ['./routes/*.js'], // Path to the API routes folder
-};
 
-const swaggerSpec = swaggerJSDoc(options);
-
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -45,7 +36,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
+
 app.use('/users', usersRouter);
 app.use('/os', osRouter);
 app.use('/products', productsRouter);
@@ -56,6 +47,11 @@ app.use(function(req, res, next) {
   next(createError(404));
 });
 
+
+app.use(express.static(__dirname+'/public')); 
+app.get("/",(req,res,next)=>{
+    res.sendFile(__dirname + "/index.html");
+});
 // error handler
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
